@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_user, current_user, logout_user, log
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:admin123@127.0.0.1:3306/flask-crud'
 
 login_manager = LoginManager()
 
@@ -37,13 +37,11 @@ def login():
     
     return jsonify({'message': 'Invalid username or password'}), 400
 
-
 @app.route('/logout', methods=['GET'])
 @login_required
 def logout():
     logout_user()
     return jsonify({'message': 'Logout success'})
-
 
 @app.route('/user', methods=['POST'])
 # @login_required # Protege a criação de usuário para apenas usuários logados
@@ -63,7 +61,6 @@ def create_user():
         return jsonify({'message': 'Invalid username or password'}), 400
     
     return jsonify({'message': 'User already exists'}), 400
-    
 
 @app.route('/user/<int:user_id>', methods=['GET'])
 @login_required

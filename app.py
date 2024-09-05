@@ -1,3 +1,4 @@
+import bcrypt
 from flask import Flask, jsonify, request
 from models.user import User
 from database import db
@@ -29,7 +30,7 @@ def login():
         # login
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:
+        if user and bcrypt.checkpw(str.encode(password), str.encode(user.password)):
             login_user(user)
             print(current_user.is_authenticated)
             return jsonify({'message': 'Login success'})
@@ -54,7 +55,8 @@ def create_user():
 
     if user is None:
         if username and password:
-            user_filter = User(username=username, password=password, role='user')
+            hashed_password = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
+            user_filter = User(username=username, password=hashed_password, role='user')
             db.session.add(user_filter)
             db.session.commit()
             return jsonify({'message': 'User created successfully'})
@@ -80,7 +82,9 @@ def update_user(user_id):
         return jsonify({'message': 'Atualização não permitida'}), 403
     
     if user and data.get('password'):
-        user.password = data.get('password')
+        password = data.get('password')
+        hashed_password = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
+        user.password = hashed_password
         db.session.commit()
         return jsonify({'message': f'User {user_id} updated successfully, try login again'})
     return jsonify({'message': 'User not found'}), 404
